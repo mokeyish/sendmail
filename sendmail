@@ -1,0 +1,116 @@
+#!/bin/sh
+
+help()
+{
+   echo ""
+   echo "Usage: $0 --server smtps://smtp.example.com:465 --from noreply@example.com --to your@mail.com --user <user> --pass <password>"
+   echo -e "\t--server          mail stmp server"
+   echo -e "\t--from            mail from"
+   echo -e "\t--to              mail to"
+   echo -e "\t--subejct         mail subject"
+   echo -e "\t--content         mail content"
+   echo -e "\t--user            mail user"
+   echo -e "\t--pass            mail pass"
+   exit 1 # Exit script after printing help
+}
+
+
+while true; do
+  case "$1" in
+    --server ) P_MAIL_SERVER="$2"; shift 2;;
+    --from ) P_MAIL_FROM="$2"; shift 2 ;;
+    --to ) P_MAIL_TO="$2"; shift 2 ;;
+    --subject ) P_MAIL_SUBJECT="$2"; shift 2 ;;
+    -c | --content ) P_MAIL_CONTENT="$2"; shift 2 ;;
+    --user ) P_MAIL_USER="$2"; shift 2 ;;
+    --pass ) P_MAIL_PASS="$2"; shift 2 ;;
+    -d | --debug ) DEBUG=true; shift ;;
+    -h | --help ) help ;;
+    -- ) shift; break ;;
+    * ) break ;;
+  esac
+done
+
+
+MAIL_SERVER=${P_MAIL_SERVER:-$MAIL_SERVER}
+MAIL_FROM=${P_MAIL_FROM:-$MAIL_FROM}
+MAIL_TO=${P_MAIL_TO:-$MAIL_TO}
+
+MAIL_SUBJECT=${P_MAIL_SUBJECT:-$MAIL_SUBJECT}
+MAIL_CONTENT=${P_MAIL_CONTENT:-$MAIL_CONTENT}
+
+MAIL_USER=${P_MAIL_USER:-$MAIL_USER}
+MAIL_PASS=${P_MAIL_PASS:-$MAIL_PASS}
+
+
+if [ $DEBUG ]
+then
+    echo "server: $MAIL_SERVER"
+    echo "from: $MAIL_TO"
+    echo "to: $MAIL_TO"
+    echo "subject: $MAIL_SUBJECT"
+    echo "content: $MAIL_CONTENT"
+    echo "user: $MAIL_USER"
+    echo "pass: *********"
+fi
+
+
+if [ -z "$MAIL_SERVER" ]
+then
+    echo -e "please specify stmp server."
+    exit 1
+fi
+
+if [ -z "$MAIL_FROM" ]
+then
+    echo -e "please specify mail from."
+    exit 1
+fi
+
+if [ -z "$MAIL_TO" ]
+then
+    echo -e "please specify mail to."
+    exit 1
+fi
+
+if [ -z "$MAIL_SUBJECT" ]
+then
+    echo -e "please specify mail subject."
+    exit 1
+fi
+
+
+if [ -z "$MAIL_CONTENT" ]
+then
+    echo -e "please specify mail content."
+    exit 1
+fi
+
+
+if [ -z "$MAIL_USER" ]
+then
+    echo -e "please specify mail user."
+    exit 1
+fi
+
+if [ -z "$MAIL_PASS" ]
+then
+    echo -e "please specify mail pass."
+    exit 1
+fi
+
+MAIL_CONTENT_FILE=$(mktemp ./abc-XXXXXXX)
+
+
+echo \
+"FROM: $MAIL_FROM
+TO: $MAIL_TO
+Subject: $MAIL_SUBJECT
+
+$MAIL_CONTENT
+" > $MAIL_CONTENT_FILE
+
+
+curl -s --url $MAIL_SERVER --ssl-reqd --mail-from $MAIL_FROM --mail-rcpt ${MAIL_TO//;/ --mail-rcpt } --upload-file $MAIL_CONTENT_FILE --user $MAIL_USER:$MAIL_PASS
+
+rm $MAIL_CONTENT_FILE
