@@ -46,7 +46,7 @@ MAIL_PASS=${P_MAIL_PASS:-$MAIL_PASS}
 if [ $DEBUG ]
 then
     echo "server: $MAIL_SERVER"
-    echo "from: $MAIL_TO"
+    echo "from: $MAIL_FROM"
     echo "to: $MAIL_TO"
     echo "subject: $MAIL_SUBJECT"
     echo "content: $MAIL_CONTENT"
