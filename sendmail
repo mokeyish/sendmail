@@ -17,13 +17,13 @@ help()
 
 while true; do
   case "$1" in
-    --server ) P_MAIL_SERVER="$2"; shift 2;;
-    --from ) P_MAIL_FROM="$2"; shift 2 ;;
-    --to ) P_MAIL_TO="$2"; shift 2 ;;
-    --subject ) P_MAIL_SUBJECT="$2"; shift 2 ;;
-    -c | --content ) P_MAIL_CONTENT="$2"; shift 2 ;;
-    --user ) P_MAIL_USER="$2"; shift 2 ;;
-    --pass ) P_MAIL_PASS="$2"; shift 2 ;;
+    -s | --server ) P_MAIL_SERVER="$2"; shift 2;;
+    -f | --from ) P_MAIL_FROM="$2"; shift 2 ;;
+    -t | --to ) P_MAIL_TO="$2"; shift 2 ;;
+    -S | --subject ) P_MAIL_SUBJECT="$2"; shift 2 ;;
+    -C | --content ) P_MAIL_CONTENT="$2"; shift 2 ;;
+    -u | --user ) P_MAIL_USER="$2"; shift 2 ;;
+    -p | --pass ) P_MAIL_PASS="$2"; shift 2 ;;
     -d | --debug ) DEBUG=true; shift ;;
     -h | --help ) help ;;
     -- ) shift; break ;;
@@ -69,33 +69,33 @@ fi
 
 if [ -z "$MAIL_TO" ]
 then
-    echo -e "please specify mail to."
+    echo -e "sendmail: No recipients supplied - mail will not be sent"
     exit 1
 fi
 
 if [ -z "$MAIL_SUBJECT" ]
 then
-    echo -e "please specify mail subject."
+    echo -e "sendmail: No subject supplied - mail will not be sent"
     exit 1
 fi
 
 
 if [ -z "$MAIL_CONTENT" ]
 then
-    echo -e "please specify mail content."
+    echo -e "sendmail: No content supplied - mail will not be sent"
     exit 1
 fi
 
 
 if [ -z "$MAIL_USER" ]
 then
-    echo -e "please specify mail user."
+    echo -e "sendmail: No user supplied - mail will not be sent"
     exit 1
 fi
 
 if [ -z "$MAIL_PASS" ]
 then
-    echo -e "please specify mail pass."
+    echo -e "sendmail: No pass supplied - mail will not be sent"
     exit 1
 fi
 
@@ -111,6 +111,6 @@ $MAIL_CONTENT
 " > $MAIL_CONTENT_FILE
 
 
-curl -s --url $MAIL_SERVER --ssl-reqd --mail-from $MAIL_FROM --mail-rcpt ${MAIL_TO//;/ --mail-rcpt } --upload-file $MAIL_CONTENT_FILE --user $MAIL_USER:$MAIL_PASS
+curl -s --url $MAIL_SERVER --ssl-reqd --mail-from $MAIL_FROM --mail-rcpt $(echo $MAIL_TO | sed 's/;/ --mail-rcpt /') --upload-file $MAIL_CONTENT_FILE --user $MAIL_USER:$MAIL_PASS
 
 rm $MAIL_CONTENT_FILE
