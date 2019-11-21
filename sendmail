@@ -1,5 +1,13 @@
 #!/bin/sh
 
+###################################################################
+#Script Name	:  sendmail                                                                                            
+#Description	:  a script for sendmail easily.                                                                               
+#Args           :                                                                                           
+#Author       	:    YISH                                                
+#Email         	:  mokeyish@hotmail.com                                          
+###################################################################
+
 help()
 {
    echo ""
@@ -99,7 +107,7 @@ then
     exit 1
 fi
 
-MAIL_CONTENT_FILE=$(mktemp ./abc-XXXXXXX)
+MAIL_CONTENT_FILE=$(mktemp)
 
 
 echo \
@@ -111,6 +119,12 @@ $MAIL_CONTENT
 " > $MAIL_CONTENT_FILE
 
 
-curl -s --url $MAIL_SERVER --ssl-reqd --mail-from $MAIL_FROM --mail-rcpt $(echo $MAIL_TO | sed 's/;/ --mail-rcpt /') --upload-file $MAIL_CONTENT_FILE --user $MAIL_USER:$MAIL_PASS
+curl -s --url $MAIL_SERVER --ssl-reqd \
+--mail-from $MAIL_FROM \
+--mail-rcpt $(echo $MAIL_TO | sed 's/;/ --mail-rcpt /') \
+--upload-file $MAIL_CONTENT_FILE \
+--user $MAIL_USER:$MAIL_PASS \
+&& echo sendmail success \
+|| echo sendmail fail
 
 rm $MAIL_CONTENT_FILE
